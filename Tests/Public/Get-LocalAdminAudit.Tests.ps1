@@ -1,6 +1,10 @@
 ﻿BeforeAll {
     . (Join-Path -Path $PSScriptRoot -ChildPath '..\Shared.ps1')
 
+    # A real local CIM session (DCOM, no WinRM needed) instead of an uninitialised mock object;
+    # every CIM query is still mocked.
+    $script:TestCimSession = New-CimSession -ErrorAction Stop
+
     function script:New-TestAccount {
         param(
             [string]$ClassName,
@@ -27,7 +31,7 @@
 
 Describe 'Get-LocalAdminAudit' {
     BeforeAll {
-        Mock -ModuleName ITToolkit Open-ITCimSession { New-MockObject -Type ([Microsoft.Management.Infrastructure.CimSession]) }
+        Mock -ModuleName ITToolkit Open-ITCimSession { $script:TestCimSession }
         Mock -ModuleName ITToolkit Remove-CimSession { }
 
         # Turkish display name: the group must be found by SID, not by name.
@@ -195,4 +199,8 @@ Describe 'ConvertTo-ITWqlString' {
             ConvertTo-ITWqlString -Value "O'Brien\x" | Should -Be "O\'Brien\\x"
         }
     }
+}
+
+AfterAll {
+    Remove-CimSession -CimSession $script:TestCimSession -ErrorAction SilentlyContinue
 }

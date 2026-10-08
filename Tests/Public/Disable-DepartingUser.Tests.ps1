@@ -84,9 +84,12 @@ Describe 'Disable-DepartingUser' {
         }
 
         It 'does not change the user when the backup cannot be written' {
-            Mock -ModuleName ITToolkit Export-Csv { throw 'Disk full' }
+            # A file where the backup folder should be: the folder cannot be created, so the backup
+            # really fails (no mocked cmdlet involved). The log goes to a separate, writable location.
+            Set-Content -Path $script:backupDir -Value 'not a folder'
+            $logPath = Join-Path -Path $TestDrive -ChildPath "$([guid]::NewGuid().ToString('N')).log"
 
-            $output = Disable-DepartingUser -Identity 'jdoe' -BackupDirectory $script:backupDir -TargetOU $script:targetOU -Confirm:$false -ErrorAction Continue 2>&1
+            $output = Disable-DepartingUser -Identity 'jdoe' -BackupDirectory $script:backupDir -LogPath $logPath -TargetOU $script:targetOU -Confirm:$false -ErrorAction Continue 2>&1
             $errors = Get-ErrorRecord -Output $output
 
             $errors.Count | Should -Be 1
@@ -96,7 +99,7 @@ Describe 'Disable-DepartingUser' {
             Should -Invoke -ModuleName ITToolkit Disable-ADAccount -Times 0 -Exactly
             Should -Invoke -ModuleName ITToolkit Set-ADUser -Times 0 -Exactly
             Should -Invoke -ModuleName ITToolkit Move-ADObject -Times 0 -Exactly
-            Get-Content -Path $script:logFile -Raw | Should -Match '\| ERROR \|.*backup failed.*Disk full'
+            Get-Content -Path $logPath -Raw | Should -Match '\| ERROR \|.*backup failed, the user was not changed'
         }
 
         It 'stops before any change when the target OU does not exist' {

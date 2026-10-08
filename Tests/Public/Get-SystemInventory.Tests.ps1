@@ -1,10 +1,14 @@
 BeforeAll {
     . (Join-Path -Path $PSScriptRoot -ChildPath '..\Shared.ps1')
+
+    # A real local CIM session (DCOM, no WinRM needed) instead of an uninitialised mock object;
+    # every CIM query is still mocked.
+    $script:TestCimSession = New-CimSession -ErrorAction Stop
 }
 
 Describe 'Get-SystemInventory' {
     BeforeAll {
-        Mock -ModuleName ITToolkit Open-ITCimSession { New-MockObject -Type ([Microsoft.Management.Infrastructure.CimSession]) }
+        Mock -ModuleName ITToolkit Open-ITCimSession { $script:TestCimSession }
         Mock -ModuleName ITToolkit Remove-CimSession { }
 
         Mock -ModuleName ITToolkit Get-CimInstance {
@@ -82,4 +86,8 @@ Describe 'Get-SystemInventory' {
         $failures[0].FullyQualifiedErrorId | Should -BeLike 'InventoryQueryFailed*'
         @($output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }).ComputerName | Should -Be 'SRV01'
     }
+}
+
+AfterAll {
+    Remove-CimSession -CimSession $script:TestCimSession -ErrorAction SilentlyContinue
 }

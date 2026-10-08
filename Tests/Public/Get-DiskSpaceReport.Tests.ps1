@@ -1,10 +1,14 @@
 BeforeAll {
     . (Join-Path -Path $PSScriptRoot -ChildPath '..\Shared.ps1')
+
+    # A real local CIM session (DCOM, no WinRM needed) instead of an uninitialised mock object;
+    # every CIM query is still mocked.
+    $script:TestCimSession = New-CimSession -ErrorAction Stop
 }
 
 Describe 'Get-DiskSpaceReport' {
     BeforeAll {
-        Mock -ModuleName ITToolkit Open-ITCimSession { New-MockObject -Type ([Microsoft.Management.Infrastructure.CimSession]) }
+        Mock -ModuleName ITToolkit Open-ITCimSession { $script:TestCimSession }
         Mock -ModuleName ITToolkit Remove-CimSession { }
         Mock -ModuleName ITToolkit Get-CimInstance {
             [pscustomobject]@{ DeviceID = 'C:'; VolumeName = 'System'; FileSystem = 'NTFS'; Size = 100GB; FreeSpace = 10GB }
@@ -85,4 +89,8 @@ Describe 'Get-DiskSpaceReport' {
         $result.ComputerName | Should -Contain 'SRV01'
         $result.ComputerName | Should -Not -Contain 'OFFLINE01'
     }
+}
+
+AfterAll {
+    Remove-CimSession -CimSession $script:TestCimSession -ErrorAction SilentlyContinue
 }
