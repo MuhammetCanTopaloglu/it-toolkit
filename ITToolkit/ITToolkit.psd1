@@ -10,6 +10,7 @@
 
     FunctionsToExport    = @(
         'Export-ITReport'
+        'Get-DiskSpaceReport'
     )
     CmdletsToExport      = @()
     VariablesToExport    = @()
