@@ -75,7 +75,7 @@ Describe 'Get-SystemInventory' {
     It 'reports an unreachable computer as a non-terminating error and continues' {
         Mock -ModuleName ITToolkit Open-ITCimSession { throw 'did not respond' } -ParameterFilter { $ComputerName -eq 'OFFLINE01' }
 
-        $output = Get-SystemInventory -ComputerName 'OFFLINE01', 'SRV01' 2>&1
+        $output = Get-SystemInventory -ComputerName 'OFFLINE01', 'SRV01' -ErrorAction Continue 2>&1
         $failures = @($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
 
         $failures.Count | Should -Be 1

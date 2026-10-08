@@ -86,7 +86,7 @@ Describe 'Disable-DepartingUser' {
         It 'does not change the user when the backup cannot be written' {
             Mock -ModuleName ITToolkit Export-Csv { throw 'Disk full' }
 
-            $output = Disable-DepartingUser -Identity 'jdoe' -BackupDirectory $script:backupDir -TargetOU $script:targetOU -Confirm:$false 2>&1
+            $output = Disable-DepartingUser -Identity 'jdoe' -BackupDirectory $script:backupDir -TargetOU $script:targetOU -Confirm:$false -ErrorAction Continue 2>&1
             $errors = Get-ErrorRecord -Output $output
 
             $errors.Count | Should -Be 1
@@ -184,7 +184,7 @@ Describe 'Disable-DepartingUser' {
         It 'continues after a failed group removal and reports it' {
             Mock -ModuleName ITToolkit Remove-ADGroupMember { throw 'Insufficient access rights' } -ParameterFilter { $Identity -like 'CN=Sales,*' }
 
-            $output = Disable-DepartingUser -Identity 'jdoe' -BackupDirectory $script:backupDir -TargetOU $script:targetOU -Confirm:$false 2>&1
+            $output = Disable-DepartingUser -Identity 'jdoe' -BackupDirectory $script:backupDir -TargetOU $script:targetOU -Confirm:$false -ErrorAction Continue 2>&1
             $result = Get-Result -Output $output
 
             (Get-ErrorRecord -Output $output).Count | Should -Be 1
@@ -260,7 +260,7 @@ Describe 'Disable-DepartingUser' {
                 [pscustomobject]@{ SamAccountName = 'jdoe' }
             )
 
-            $output = $leavers | Disable-DepartingUser -BackupDirectory $script:backupDir -Confirm:$false 2>&1
+            $output = $leavers | Disable-DepartingUser -BackupDirectory $script:backupDir -Confirm:$false -ErrorAction Continue 2>&1
             $errors = Get-ErrorRecord -Output $output
 
             $errors.Count | Should -Be 1

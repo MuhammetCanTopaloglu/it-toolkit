@@ -57,7 +57,7 @@ Describe 'Get-PasswordExpiryReport' {
     }
 
     It 'skips the maximum Int64 value (never expires) without an error' {
-        $output = Get-PasswordExpiryReport 2>&1
+        $output = Get-PasswordExpiryReport -ErrorAction Continue 2>&1
 
         @($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] }) | Should -BeNullOrEmpty
         $output.SamAccountName | Should -Not -Contain 'neverexpires'
@@ -99,7 +99,7 @@ Describe 'Get-PasswordExpiryReport' {
     It 'reports a failed query as a non-terminating error' {
         Mock -ModuleName ITToolkit Get-ADUser { throw 'Unable to contact the server.' }
 
-        $failures = @(Get-PasswordExpiryReport 2>&1 | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
+        $failures = @(Get-PasswordExpiryReport -ErrorAction Continue 2>&1 | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
 
         $failures.Count | Should -Be 1
         $failures[0].FullyQualifiedErrorId | Should -BeLike 'PasswordExpiryQueryFailed*'

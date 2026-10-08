@@ -79,7 +79,7 @@ Describe 'Get-LocalAdminAudit' {
                 New-TestAccount -ClassName Win32_Account -Domain 'CONTOSO' -Name 'old.user' -Sid 'S-1-5-21-9-8-7-4242' -SidType 6 -LocalAccount $false
             }
 
-            $output = Get-LocalAdminAudit 2>&1
+            $output = Get-LocalAdminAudit -ErrorAction Continue 2>&1
             $orphan = $output | Where-Object Name -EQ 'old.user'
 
             Get-ErrorRecord -Output $output | Should -BeNullOrEmpty
@@ -120,7 +120,7 @@ Describe 'Get-LocalAdminAudit' {
                 New-TestAccount -ClassName Win32_Group -Domain 'CONTOSO' -Name 'helpdesk' -Sid 'S-1-5-21-9-8-7-1100' -SidType 2 -LocalAccount $false
             } -ParameterFilter { $ClassName -eq 'Win32_Account' -and $Filter -like "*Name = 'helpdesk'" }
 
-            $output = Get-LocalAdminAudit 2>&1
+            $output = Get-LocalAdminAudit -ErrorAction Continue 2>&1
             $result = @($output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] })
 
             Get-ErrorRecord -Output $output | Should -BeNullOrEmpty
@@ -170,7 +170,7 @@ Describe 'Get-LocalAdminAudit' {
         It 'reports a missing Administrators group as an error' {
             Mock -ModuleName ITToolkit Get-CimInstance { } -ParameterFilter { $ClassName -eq 'Win32_Group' }
 
-            $errors = Get-ErrorRecord -Output (Get-LocalAdminAudit 2>&1)
+            $errors = Get-ErrorRecord -Output (Get-LocalAdminAudit -ErrorAction Continue 2>&1)
 
             $errors.Count | Should -Be 1
             $errors[0].Exception.Message | Should -Match 'S-1-5-32-544'
@@ -179,7 +179,7 @@ Describe 'Get-LocalAdminAudit' {
         It 'continues with the next computer when one is unreachable' {
             Mock -ModuleName ITToolkit Open-ITCimSession { throw 'did not respond' } -ParameterFilter { $ComputerName -eq 'OFFLINE01' }
 
-            $output = Get-LocalAdminAudit -ComputerName 'OFFLINE01', 'SRV01' 2>&1
+            $output = Get-LocalAdminAudit -ComputerName 'OFFLINE01', 'SRV01' -ErrorAction Continue 2>&1
             $errors = Get-ErrorRecord -Output $output
 
             $errors.Count | Should -Be 1

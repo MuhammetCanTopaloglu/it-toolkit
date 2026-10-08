@@ -117,7 +117,7 @@ Describe 'Get-StaleADAccount' {
     It 'reports a failed query as a non-terminating error and continues' {
         Mock -ModuleName ITToolkit Get-ADUser { throw 'Unable to contact the server.' }
 
-        $output = Get-StaleADAccount 2>&1
+        $output = Get-StaleADAccount -ErrorAction Continue 2>&1
         $failures = @($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
 
         $failures.Count | Should -Be 1

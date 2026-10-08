@@ -89,7 +89,7 @@ Describe 'Get-ExpiringCertificate' {
         It 'fails fast when WinRM does not answer and continues with the next computer' {
             Mock -ModuleName ITToolkit Test-ITTcpPort { } -ParameterFilter { $ComputerName -eq 'OFFLINE01' }
 
-            $output = Get-ExpiringCertificate -ComputerName 'OFFLINE01', 'WEB01' -TimeoutSeconds 2 2>&1
+            $output = Get-ExpiringCertificate -ComputerName 'OFFLINE01', 'WEB01' -TimeoutSeconds 2 -ErrorAction Continue 2>&1
             $failures = @($output | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
 
             $failures.Count | Should -Be 1
