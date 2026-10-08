@@ -32,6 +32,15 @@ if ($Task -contains 'All') {
 if ($Task -contains 'Bootstrap') {
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
+    # Windows PowerShell 5.1 needs the NuGet provider for Install-Module; without it, it prompts.
+    if ($PSVersionTable.PSEdition -ne 'Core') {
+        $nuget = Get-PackageProvider -ListAvailable -Name NuGet -ErrorAction SilentlyContinue |
+            Where-Object { $_.Version -ge [version]'2.8.5.201' }
+        if (-not $nuget) {
+            $null = Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope CurrentUser -Force
+        }
+    }
+
     $pester = Get-Module -ListAvailable -Name Pester |
         Where-Object { $_.Version -ge $pesterMinimum -and $_.Version -le $pesterMaximum }
     if (-not $pester) {
