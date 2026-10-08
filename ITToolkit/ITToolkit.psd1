@@ -9,6 +9,7 @@
     CompatiblePSEditions = @('Desktop', 'Core')
 
     FunctionsToExport    = @(
+        'Disable-DepartingUser'
         'Export-ITReport'
         'Get-DiskSpaceReport'
         'Get-ExpiringCertificate'
