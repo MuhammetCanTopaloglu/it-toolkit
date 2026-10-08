@@ -1,5 +1,5 @@
-# Minimal stand-ins for the ActiveDirectory cmdlets used by ITToolkit. They are only imported when
-# the real module is not installed, so that Pester can mock them. Calling one without a mock fails.
+# Minimal stand-ins for the ActiveDirectory cmdlets used by ITToolkit, so that Pester can mock them
+# without RSAT and without the real parameter types. Calling one without a mock fails.
 
 function Get-ADUser {
     [CmdletBinding()]
