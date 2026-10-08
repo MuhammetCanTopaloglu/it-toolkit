@@ -12,6 +12,7 @@
         'Export-ITReport'
         'Get-DiskSpaceReport'
         'Get-LocalAdminAudit'
+        'Get-SystemInventory'
         'Get-UpdateStatus'
     )
     CmdletsToExport      = @()
