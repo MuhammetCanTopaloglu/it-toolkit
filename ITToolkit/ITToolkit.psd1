@@ -13,6 +13,7 @@
         'Get-DiskSpaceReport'
         'Get-ExpiringCertificate'
         'Get-LocalAdminAudit'
+        'Get-StaleADAccount'
         'Get-SystemInventory'
         'Get-UpdateStatus'
     )
