@@ -17,31 +17,41 @@ jobs:
       matrix:
         include:
           - name: Windows PowerShell 5.1
-            shell: powershell
+            exe: powershell
             id: ps51
           - name: PowerShell 7
-            shell: pwsh
+            exe: pwsh
             id: ps7
+
+    # Steps run in pwsh; build.ps1 is started in a separate process with the PowerShell
+    # edition under test (matrix.exe), because `shell:` cannot take a matrix value.
+    defaults:
+      run:
+        shell: pwsh
 
     steps:
       - name: Check out
         uses: actions/checkout@v7
 
       - name: Show PowerShell version
-        shell: ${{ matrix.shell }}
-        run: $PSVersionTable | Format-Table -AutoSize
+        run: |
+          & ${{ matrix.exe }} -NoProfile -Command '$PSVersionTable | Format-Table -AutoSize'
+          exit $LASTEXITCODE
 
       - name: Install Pester 5 and PSScriptAnalyzer
-        shell: ${{ matrix.shell }}
-        run: ./build.ps1 -Task Bootstrap
+        run: |
+          & ${{ matrix.exe }} -NoProfile -ExecutionPolicy Bypass -File ./build.ps1 -Task Bootstrap
+          exit $LASTEXITCODE
 
       - name: PSScriptAnalyzer
-        shell: ${{ matrix.shell }}
-        run: ./build.ps1 -Task Analyze
+        run: |
+          & ${{ matrix.exe }} -NoProfile -ExecutionPolicy Bypass -File ./build.ps1 -Task Analyze
+          exit $LASTEXITCODE
 
       - name: Pester
-        shell: ${{ matrix.shell }}
-        run: ./build.ps1 -Task Test
+        run: |
+          & ${{ matrix.exe }} -NoProfile -ExecutionPolicy Bypass -File ./build.ps1 -Task Test
+          exit $LASTEXITCODE
 
       - name: Upload test results
         if: always()
