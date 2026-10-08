@@ -79,6 +79,9 @@ if ($Task -contains 'Test') {
     $config.TestResult.OutputFormat = 'NUnitXml'
     $config.TestResult.OutputPath = Join-Path -Path $resultsDir -ChildPath "pester-ps$($PSVersionTable.PSVersion.Major).xml"
     $config.CodeCoverage.Enabled = $true
+    # The default tracer-based coverage intermittently crashed Windows PowerShell 5.1 (access
+    # violation in clr.dll); breakpoint-based coverage is slower but stable.
+    $config.CodeCoverage.UseBreakpoints = $true
     $config.CodeCoverage.Path = Join-Path -Path $PSScriptRoot -ChildPath 'ITToolkit'
     $config.CodeCoverage.OutputPath = Join-Path -Path $resultsDir -ChildPath "coverage-ps$($PSVersionTable.PSVersion.Major).xml"
 
