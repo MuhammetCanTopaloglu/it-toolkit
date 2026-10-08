@@ -11,6 +11,7 @@
     FunctionsToExport    = @(
         'Export-ITReport'
         'Get-DiskSpaceReport'
+        'Get-ExpiringCertificate'
         'Get-LocalAdminAudit'
         'Get-SystemInventory'
         'Get-UpdateStatus'
